@@ -1,12 +1,11 @@
 Package: FinalProjectComputing
-Title: What the Package Does (One Line, Title Case)
+Title: Fitting Poisson Model to Epilepsy Data
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+      c(person("Daniel", "Gurrero", , "dguerre4@uwo.ca",  role = c("aut", "cre")),        
+        person("Hongjun", "Sim", , "hsim22@uwo.ca",  role = c("aut", "cre")))
+Description: This package fit the poisson model to epilepsy data with a funtion that provides summary information including the point estimates, standard erros, and 95% confidence intervals for each parameter in the model.
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
