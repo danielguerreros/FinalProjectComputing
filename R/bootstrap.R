@@ -49,7 +49,7 @@ pValue <- function(data, n_boot){
 
   B <- n_boot
   model_0 <- run_model(epilepsy,"epilepsy")
-  t_value <- model$test_stat["expind"]
+  t_value <- model$test_stat["expind:treat"]
 
 
   bootstrap <- tibble(B = 1:B) %>%
