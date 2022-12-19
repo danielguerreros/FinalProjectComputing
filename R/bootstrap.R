@@ -45,7 +45,8 @@ confidence_interval <- function(data, predictor,n_boot){
   bootstrap %>%
     filter(name == predictor) %>%
     summarize(Lower95 = quantile(estimate, .025),
-              Upper95 = quantile(estimate,.975))
+              Upper95 = quantile(estimate,.975),
+              stderror = sd(estimate))
 }
 
 #' P Value of the predictor age
