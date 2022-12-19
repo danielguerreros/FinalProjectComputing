@@ -6,9 +6,8 @@
 #' @return A list with summary statistics from the fitted model.
 #' @export
 #'
-#'
 #' @examples
-#' @import tidyverse
+#' @importFrom dplyr tibble summarize %>% group_by
 #' ##### Epilepsy #####
 #'
 #' ## Load data
@@ -103,7 +102,7 @@ run_model <- function(data, example = "tortoise"){
 #' @export
 #'
 #' @examples
-#' @import tidyverse
+#' @importFrom dplyr tibble summarize %>% group_by
 #' ##### Epilepsy #####
 #'
 #' ## Load data
@@ -127,7 +126,7 @@ model_results <- function(data,n_boot){
   n <- nrow(data)
 
   # Fit initial model to get statistics and point estimates
-  model_0 <- run_model(epilepsy,"epilepsy")
+  model_0 <- run_model(data,"epilepsy")
 
   # Saving the point estimates and the t_stat in one tibble
   point_estimates <- merge(enframe(model_0$beta,name="Variable",value="Point Estimate"),
@@ -170,8 +169,9 @@ model_results <- function(data,n_boot){
 #' @return The pvalue of the hypothesis predictor age equal to 0
 #' @export
 #'
+#'
 #' @examples
-#' @import tidyverse
+#' @importFrom dplyr tibble summarize %>% group_by
 #' ##### Epilepsy #####
 #'
 #' ## Load data
@@ -222,8 +222,9 @@ pValue_age <- function(data,t_value,n_boot){
 #' @return The pvalue of the hypothesis predictor age equal to 0
 #' @export
 #'
+#'
 #' @examples
-#' @import tidyverse
+#' @importFrom dplyr tibble summarize %>% group_by
 #' ##### Epilepsy #####
 #'
 #' ## Load data
@@ -275,7 +276,7 @@ pValue_expind <- function(data,t_value,n_boot){
 #' @export
 #'
 #' @examples
-#' @import tidyverse
+#' @importFrom dplyr tibble summarize %>% group_by
 #' ##### Epilepsy #####
 #'
 #' ## Load data
@@ -327,7 +328,7 @@ pValue_treat <- function(data,t_value,n_boot){
 #' @export
 #'
 #' @examples
-#' @import tidyverse
+#' @importFrom dplyr tibble summarize %>% group_by
 #' ##### Epilepsy #####
 #'
 #' ## Load data
@@ -349,7 +350,7 @@ pValue_treat <- function(data,t_value,n_boot){
 model_summary <- function(data,n_boot){
 
   # Initial results
-  results <- model_results(epilepsy,n_boot)
+  results <- model_results(data,n_boot)
 
   #Getting statistics for predictors
   pAge <- results %>%
@@ -365,9 +366,9 @@ model_summary <- function(data,n_boot){
     pull(t_stat)
 
   # Getting p Values for predictors
-  p_Values <- pValue_age(epilepsy,pAge[1],n_boot) %>%
-    bind_rows(pValue_expind(epilepsy,pExp[1],n_boot)) %>%
-    bind_rows(pValue_treat(epilepsy,pTreat[1],n_boot))
+  p_Values <- pValue_age(data,pAge[1],n_boot) %>%
+    bind_rows(pValue_expind(data,pExp[1],n_boot)) %>%
+    bind_rows(pValue_treat(data,pTreat[1],n_boot))
 
   left_join(results,p_Values)
 }
