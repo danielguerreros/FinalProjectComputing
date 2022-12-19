@@ -14,3 +14,7 @@ BugReports: https://github.com/danielguerreros/FinalProjectComputing/issues
 Depends: 
     R (>= 2.10)
 LazyData: true
+Imports:
+  tidyverse 
+  lme4
+  ggplot2
