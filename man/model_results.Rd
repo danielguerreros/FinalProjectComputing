@@ -17,23 +17,3 @@ A dataframe with important information about the predictors like point estimates
 \description{
 Model results
 }
-\examples{
-##### Epilepsy #####
-
-## Load data
-epilepsy <- read_csv("epilepsy.csv")
-
-## Sum separate observations for each patient in the after period
-epilepsy <- epilepsy \%>\%
-  group_by(id,treat,expind,age) \%>\%
-  summarize(seizures = sum(seizures),
-            .groups = "drop")
-
-## Fit model to epilepsy data. Fixed effects in the model are:
-##  (Intercept) -- the intercept
-##  age -- age as a continuous predictor
-##  expind -- a categorical variable with two levels (0 for before and 1 for after)
-##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
-
-results <- model_results(epilepsy, "epilepsy")
-}

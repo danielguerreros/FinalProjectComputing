@@ -19,17 +19,3 @@ The pvalue of the hypothesis predictor age equal to 0
 \description{
 P Value of the predictor expind
 }
-\examples{
-##### Epilepsy #####
-
-## Load data
-epilepsy <- read_csv("epilepsy.csv")
-
-## Sum separate observations for each patient in the after period
-epilepsy <- epilepsy \%>\%
-  group_by(id,treat,expind,age) \%>\%
-  summarize(seizures = sum(seizures),
-            .groups = "drop")
-
-pValue_expind <- pValue_expind(epilepsy,1.16,1000)
-}
