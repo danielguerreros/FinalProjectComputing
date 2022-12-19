@@ -127,3 +127,276 @@ run_model <- function(data, example = "tortoise"){
 
 
 }
+
+#' Model results
+#'
+#' @param data the data set used to fit the model
+#' @param n_boot the number of bootstraping samples to use
+#'
+#' @return A dataframe with important information about the predictors like point estimates, tstatistic, standard error and confidence intervals.
+#' @export
+#'
+#' @examples
+#' ##### Epilepsy #####
+#'
+#' ## Load data
+#' epilepsy <- read_csv("epilepsy.csv")
+#'
+#' ## Sum separate observations for each patient in the after period
+#' epilepsy <- epilepsy %>%
+#'   group_by(id,treat,expind,age) %>%
+#'   summarize(seizures = sum(seizures),
+#'             .groups = "drop")
+#'
+#' ## Fit model to epilepsy data. Fixed effects in the model are:
+#' ##  (Intercept) -- the intercept
+#' ##  age -- age as a continuous predictor
+#' ##  expind -- a categorical variable with two levels (0 for before and 1 for after)
+#' ##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
+#'
+#' results <- model_results(epilepsy, "epilepsy")
+model_results <- function(data,n_boot){
+
+  n <- nrow(data)
+
+  # Fit initial model to get statistics and point estimates
+  model_0 <- run_model(epilepsy,"epilepsy")
+
+  # Saving the point estimates and the t_stat in one tibble
+  point_estimates <- merge(enframe(model_0$beta,name="Variable",value="Point Estimate"),
+                           enframe(model_0$test_stat,name="Variable",value="t_stat"))
+
+  # Bootstrapping to get the confidence interval and standard error
+  bootstrap <- tibble(B = 1:n_boot) %>%
+    crossing(data) %>%
+    group_by(B) %>%
+    summarize(Index = sample(n, n, replace = TRUE),
+              seizures = seizures[Index],
+              age = age[Index],
+              expind = expind[Index],
+              treat = treat[Index],
+              id = id[Index],
+              .groups = "drop") %>%
+    nest_by(B) %>% summarize(
+      merge(enframe(run_model(data,"epilepsy")$beta,name="Variable",value='estimate'),
+            enframe(run_model(data,"epilepsy")$test_stat,name="Variable",value='statistic')),
+      .groups = "drop")
+
+  # Saving bootstrap results in tibble
+  important_stats <- bootstrap %>%
+    group_by(Variable) %>%
+    summarize(
+      stderror = sd(estimate),
+      Lower95 = quantile(estimate, .025),
+      Upper95 = quantile(estimate,.975)
+    )
+
+  merge(point_estimates,important_stats)
+  }
+
+#' P Value of the predictor age
+#'
+#' @param data the data set used to fit the model
+#' @param n_boot the number of bootstraping samples to use
+#' @param t_value statistic of predictor when the model was fitted
+#'
+#' @return The pvalue of the hypothesis predictor age equal to 0
+#' @export
+#'
+#' @examples
+#' ##### Epilepsy #####
+#'
+#' ## Load data
+#' epilepsy <- read_csv("epilepsy.csv")
+#'
+#' ## Sum separate observations for each patient in the after period
+#' epilepsy <- epilepsy %>%
+#'   group_by(id,treat,expind,age) %>%
+#'   summarize(seizures = sum(seizures),
+#'             .groups = "drop")
+#'
+#' pValue_age <- pValue_age(epilepsy,1.16,1000)
+pValue_age <- function(data,t_value,n_boot){
+
+  B <- n_boot
+  n <- nrow(data)
+
+  bootstrap <- tibble(B = 1:B) %>%
+    crossing(data) %>%
+    group_by(B) %>%
+    summarize(Index1 = sample(n, n, replace = TRUE),
+              Index2 = sample(n, n, replace = TRUE),
+              seizures = seizures[Index1],
+              age = age[Index2],
+              expind = expind[Index1],
+              treat = treat[Index1],
+              id = id[Index1],
+              .groups = "drop") %>%
+    nest_by(B) %>%
+    summarize(
+      enframe(run_model(data,"epilepsy")$test_stat,value='statistic'),
+      .groups = "drop")
+
+  ## Compute p-value
+  bootstrap %>%
+    filter(name == "age") %>%
+    summarize(p_value = mean(abs(statistic) > abs(t_value))) %>%
+    mutate(Variable = "age")
+
+}
+
+#' P Value of the predictor expind
+#'
+#' @param data the data set used to fit the model
+#' @param n_boot the number of bootstraping samples to use
+#' @param t_value statistic of predictor when the model was fitted
+#'
+#' @return The pvalue of the hypothesis predictor age equal to 0
+#' @export
+#'
+#' @examples
+#' ##### Epilepsy #####
+#'
+#' ## Load data
+#' epilepsy <- read_csv("epilepsy.csv")
+#'
+#' ## Sum separate observations for each patient in the after period
+#' epilepsy <- epilepsy %>%
+#'   group_by(id,treat,expind,age) %>%
+#'   summarize(seizures = sum(seizures),
+#'             .groups = "drop")
+#'
+#' pValue_expind <- pValue_expind(epilepsy,1.16,1000)
+pValue_expind <- function(data,t_value,n_boot){
+
+  B <- n_boot
+  n <- nrow(data)
+
+  bootstrap <- tibble(B = 1:B) %>%
+    crossing(data) %>%
+    group_by(B) %>%
+    summarize(Index1 = sample(n, n, replace = TRUE),
+              Index2 = sample(n, n, replace = TRUE),
+              seizures = seizures[Index1],
+              age = age[Index1],
+              expind = expind[Index2],
+              treat = treat[Index1],
+              id = id[Index1],
+              .groups = "drop") %>%
+    nest_by(B) %>%
+    summarize(
+      enframe(run_model(data,"epilepsy")$test_stat,value='statistic'),
+      .groups = "drop")
+
+  ## Compute p-value
+  bootstrap %>%
+    filter(name == "expind") %>%
+    summarize(p_value = mean(abs(statistic) > abs(t_value))) %>%
+    mutate(Variable = "expind")
+
+}
+
+#' P Value of the predictor treat
+#'
+#' @param data the data set used to fit the model
+#' @param n_boot the number of bootstraping samples to use
+#' @param t_value statistic of predictor when the model was fitted
+#'
+#' @return The pvalue of the hypothesis predictor age equal to 0
+#' @export
+#'
+#' @examples
+#' ##### Epilepsy #####
+#'
+#' ## Load data
+#' epilepsy <- read_csv("epilepsy.csv")
+#'
+#' ## Sum separate observations for each patient in the after period
+#' epilepsy <- epilepsy %>%
+#'   group_by(id,treat,expind,age) %>%
+#'   summarize(seizures = sum(seizures),
+#'             .groups = "drop")
+#'
+#' pValue_treat <- pValue_age(epilepsy,1.16,1000)
+pValue_treat <- function(data,t_value,n_boot){
+
+  B <- n_boot
+  n <- nrow(data)
+
+  bootstrap <- tibble(B = 1:B) %>%
+    crossing(data) %>%
+    group_by(B) %>%
+    summarize(Index1 = sample(n, n, replace = TRUE),
+              Index2 = sample(n, n, replace = TRUE),
+              seizures = seizures[Index1],
+              age = age[Index1],
+              expind = expind[Index1],
+              treat = treat[Index2],
+              id = id[Index1],
+              .groups = "drop") %>%
+    nest_by(B) %>%
+    summarize(
+      enframe(run_model(data,"epilepsy")$test_stat,value='statistic'),
+      .groups = "drop")
+
+  ## Compute p-value
+  bootstrap %>%
+    filter(name == "expind:treat") %>%
+    summarize(p_value = mean(abs(statistic) > abs(t_value))) %>%
+    mutate(Variable = "expind:treat")
+
+}
+
+
+#' Model summary
+#'
+#' @param data the data set used to fit the model
+#' @param n_boot the number of bootstraping samples to use
+#'
+#' @return A dataframe with important information about the predictors like point estimates, tstatistic, standard error, confidence intervals and p values.
+#' @export
+#'
+#' @examples
+#' ##### Epilepsy #####
+#'
+#' ## Load data
+#' epilepsy <- read_csv("epilepsy.csv")
+#'
+#' ## Sum separate observations for each patient in the after period
+#' epilepsy <- epilepsy %>%
+#'   group_by(id,treat,expind,age) %>%
+#'   summarize(seizures = sum(seizures),
+#'             .groups = "drop")
+#'
+#' ## Fit model to epilepsy data. Fixed effects in the model are:
+#' ##  (Intercept) -- the intercept
+#' ##  age -- age as a continuous predictor
+#' ##  expind -- a categorical variable with two levels (0 for before and 1 for after)
+#' ##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
+#'
+#' summary <- model_summary(epilepsy, "epilepsy")
+model_summary <- function(data,n_boot){
+
+  # Initial results
+  results <- model_results(epilepsy,n_boot)
+
+  #Getting statistics for predictors
+  pAge <- results %>%
+    filter(Variable=="age") %>%
+    pull(t_stat)
+
+  pExp <- results %>%
+    filter(Variable=="expind") %>%
+    pull(t_stat)
+
+  pTreat <- results %>%
+    filter(Variable=="expind:treat") %>%
+    pull(t_stat)
+
+  # Getting p Values for predictors
+  p_Values <- pValue_age(epilepsy,pAge[1],n_boot) %>%
+    bind_rows(pValue_expind(epilepsy,pExp[1],n_boot)) %>%
+    bind_rows(pValue_treat(epilepsy,pTreat[1],n_boot))
+
+  left_join(results,p_Values)
+}
