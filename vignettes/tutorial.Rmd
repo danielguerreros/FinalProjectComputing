@@ -27,7 +27,7 @@ library(lme4)
 
 
 
- # Exploratory data analysis
+# Exploratory data analysis
  
 ```{r include=FALSE}
 data("epilepsy")
