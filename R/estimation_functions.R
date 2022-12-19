@@ -6,11 +6,13 @@
 #' @return A list with summary statistics from the fitted model.
 #' @export
 #'
+#'
 #' @examples
+#' @import tidyverse
 #' ##### Epilepsy #####
 #'
 #' ## Load data
-#' epilepsy <- read_csv("epilepsy.csv")
+#' data("epilepsy")
 #'
 #' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
@@ -25,43 +27,7 @@
 #' ##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
 #'
 #' epilepsy_fit <- run_model(epilepsy, "epilepsy")
-#'
-#' ##### CTSIB #####
-#'
-#' ## Load data
-#' ctsib <- read_csv("ctsib.csv")
-#'
-#' ## Define response (stable or not)
-#' ctsib <- ctsib %>%
-#'   mutate(stable = 1 * (CTSIB == 1))
-#'
-#' ## Fit model to ctsib data. Fixed effects in the model include:
-#' ##  (Intercept) -- the intercept
-#' ##  Surface -- a categorical variable with two levels (foam and norm)
-#' ##  Vision -- a categorical variable with three levels (closed, dome, open)
-#'
-#' ctsib_fit <- run_model(ctsib, "ctsib")
-#'
-#' ##### Tortoise #####
-#' ## Load data
-#' tortoise <- read_csv("gopher_tortoise.csv")
-#'
-#' ## Fit model to tortoise data. Fixed effects in the model are:
-#' ##   (Intercept) -- the intercept
-#' ##   prev -- the seroprevalence
-#' ##   year -- year effect (as a categorical variable)
-#'
-#' tortoise_fit <- run_model(tortoise, "tortoise")
-#'
-#' ##### Culcita #####
-#' ## Load data
-#' culcita <- read_csv("culcita.csv")
-#'
-#' ## Fit model to culcita data. Fixed effects in the model are:
-#' ##   (Intercept) -- the intercept
-#' ##   ttt -- the treatment as a categorical variable with four levels: none, crabs, shrimp, or both
-#'
-#' culcita_fit <- run_model(culcita, "culcita")
+
 run_model <- function(data, example = "tortoise"){
 
   ## Fit model
@@ -137,10 +103,11 @@ run_model <- function(data, example = "tortoise"){
 #' @export
 #'
 #' @examples
+#' @import tidyverse
 #' ##### Epilepsy #####
 #'
 #' ## Load data
-#' epilepsy <- read_csv("epilepsy.csv")
+#' data("epilepsy")
 #'
 #' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
@@ -154,7 +121,7 @@ run_model <- function(data, example = "tortoise"){
 #' ##  expind -- a categorical variable with two levels (0 for before and 1 for after)
 #' ##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
 #'
-#' results <- model_results(epilepsy, "epilepsy")
+#' results <- model_results(epilepsy, 10)
 model_results <- function(data,n_boot){
 
   n <- nrow(data)
@@ -204,10 +171,11 @@ model_results <- function(data,n_boot){
 #' @export
 #'
 #' @examples
+#' @import tidyverse
 #' ##### Epilepsy #####
 #'
 #' ## Load data
-#' epilepsy <- read_csv("epilepsy.csv")
+#' data("epilepsy")
 #'
 #' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
@@ -215,7 +183,7 @@ model_results <- function(data,n_boot){
 #'   summarize(seizures = sum(seizures),
 #'             .groups = "drop")
 #'
-#' pValue_age <- pValue_age(epilepsy,1.16,1000)
+#' pValue_age <- pValue_age(epilepsy,1.16,10)
 pValue_age <- function(data,t_value,n_boot){
 
   B <- n_boot
@@ -255,10 +223,11 @@ pValue_age <- function(data,t_value,n_boot){
 #' @export
 #'
 #' @examples
+#' @import tidyverse
 #' ##### Epilepsy #####
 #'
 #' ## Load data
-#' epilepsy <- read_csv("epilepsy.csv")
+#' data("epilepsy")
 #'
 #' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
@@ -266,7 +235,7 @@ pValue_age <- function(data,t_value,n_boot){
 #'   summarize(seizures = sum(seizures),
 #'             .groups = "drop")
 #'
-#' pValue_expind <- pValue_expind(epilepsy,1.16,1000)
+#' pValue_expind <- pValue_expind(epilepsy,1.16,10)
 pValue_expind <- function(data,t_value,n_boot){
 
   B <- n_boot
@@ -306,10 +275,11 @@ pValue_expind <- function(data,t_value,n_boot){
 #' @export
 #'
 #' @examples
+#' @import tidyverse
 #' ##### Epilepsy #####
 #'
 #' ## Load data
-#' epilepsy <- read_csv("epilepsy.csv")
+#' data("epilepsy")
 #'
 #' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
@@ -317,7 +287,7 @@ pValue_expind <- function(data,t_value,n_boot){
 #'   summarize(seizures = sum(seizures),
 #'             .groups = "drop")
 #'
-#' pValue_treat <- pValue_age(epilepsy,1.16,1000)
+#' pValue_treat <- pValue_age(epilepsy,1.16,10)
 pValue_treat <- function(data,t_value,n_boot){
 
   B <- n_boot
@@ -357,10 +327,11 @@ pValue_treat <- function(data,t_value,n_boot){
 #' @export
 #'
 #' @examples
+#' @import tidyverse
 #' ##### Epilepsy #####
 #'
 #' ## Load data
-#' epilepsy <- read_csv("epilepsy.csv")
+#' data("epilepsy")
 #'
 #' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
@@ -374,7 +345,7 @@ pValue_treat <- function(data,t_value,n_boot){
 #' ##  expind -- a categorical variable with two levels (0 for before and 1 for after)
 #' ##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
 #'
-#' summary <- model_summary(epilepsy, "epilepsy")
+#' summary <- model_summary(epilepsy, 10)
 model_summary <- function(data,n_boot){
 
   # Initial results
