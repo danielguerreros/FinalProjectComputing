@@ -23,21 +23,20 @@ library(FinalProjectComputing)
 library(dplyr)
 library(ggplot2)
 library(tidyverse)
+library(lme4)
 ```
 
 
 
  # Exploratory data analysis
+ 
 ```{r include=FALSE}
-epilepsy <- data(epilepsy)
+data("epilepsy")
 epilepsy <- epilepsy %>%
 group_by(id,treat,expind,age) %>%
 summarize(seizures = sum(seizures),.groups = "drop")
 ```
 
-age - age as a continuous predictor
-expind - a categorical variable with two levels (0 for before and 1 for after)
-treat - a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
 
 summary statistics
 ```{r echo=FALSE}
@@ -46,23 +45,85 @@ summary(epilepsy)
 ```{r echo=FALSE}
 str(epilepsy)
 ```
-```{r}
+```{r echo=FALSE}
+head(epilepsy)
+```
+There are 4 variables which are treat, expind, age, and seizures with 59 subjects ID
+
+age - age of the patients as a continuous predictor
+expind - a categorical variable with two levels (0 for before and 1 for after)
+expind :treat - a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
+seizures - the number of seizures patients had as continuous variable
+
+```{r echo=FALSE}
 ggplot(epilepsy , aes(x= treat , y= seizures)) +
 geom_boxplot(aes(group=treat))
 ```
-```{r}
+```{r echo=FALSE}
 ggplot(epilepsy , aes(x= expind , y= seizures)) +
 geom_boxplot(aes(group=expind))
 ```
+Two box-plots show the number of seizures between two groups of treatment and 
+between two groups of expind.
+
 ```{r}
 plot(epilepsy$age, epilepsy$seizures,
         xlab="age",
         ylab="seizures")
 ```
+Age and seizures seem there is no linear relationship. 
+
+
+# Model Fitting and use of the functions
+
+The purpose of this package is to use the epilepsy data to fit the following model
+
+\begin{equation*}
+    Y_{ij} \sim \mathrm{Poisson}(\mathrm{exp}(\mu_{ij})) 
+\end{equation*}
+
+With $Y_{ij}$ being the number of seizures of an individual and $\mu_{ij}$ following this equation
+
+$$
+    \eta_{ij} =\mathrm{log}(\mu_{ij}) = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{3j} + \beta_3 x_{2i}x_{3j} + z_i
+$$
+
+where 
+\begin{align*}
+    x_{i1} & = \text{ Age of patient} \\
+    x_{2i} & = \text{ 0 if placebo, 1 otherwise} \\
+    x_{3j} & = \text{0 before treatment, 1 after} \\
+    z_i & = \text{Random effect with mean 0 and unknown variance}
+\end{align*}
+
+To fit the model and get the main results we can use the function run_model specifying that the epilepsy data.
+
 ```{r}
-head(epilepsy)
+run_model(epilepsy,"epilepsy")
 ```
 
-# Model Fitting
+To get the estimates of the standard error and confidence intervals using bootstraping we can use the function model_results. Note that this functions need the parameter n_boot that is the number of bootstraps to do.
 
-We used
+```{r warning=FALSE}
+model_results(epilepsy,300)
+```
+
+Finally, to get the p-values of the following hypothesis testing for each predictor
+
+$$
+H_0: \beta_k = 0 \text{ vs } H_1: \beta_k \neq 0
+$$
+
+we use the function model_summary
+
+```{r warning=FALSE}
+model_summary(epilepsy,300)
+```
+
+It is also possible to get the p-Value of only one of the predictors using the function pValue_predictor replacing "predictor" by the name. In the case of the predictor age with the t statistic 1.9 we can use it like this
+
+```{r warning=FALSE}
+pValue_age(epilepsy,1.9,300)
+```
+
+
