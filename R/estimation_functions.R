@@ -4,29 +4,16 @@
 #' @param example the name of your example: one of "culcita", "ctsib", "epilepsy", or "tortoise"
 #'
 #' @return A list with summary statistics from the fitted model.
+#' @import lme4
+#' @import tidyverse
 #' @export
-#'
-#' @examples
-#' @importFrom dplyr tibble summarize %>% group_by
-#' ##### Epilepsy #####
-#'
-#' ## Load data
+#' @example
 #' data("epilepsy")
-#'
-#' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
 #'   group_by(id,treat,expind,age) %>%
 #'   summarize(seizures = sum(seizures),
 #'             .groups = "drop")
-#'
-#' ## Fit model to epilepsy data. Fixed effects in the model are:
-#' ##  (Intercept) -- the intercept
-#' ##  age -- age as a continuous predictor
-#' ##  expind -- a categorical variable with two levels (0 for before and 1 for after)
-#' ##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
-#'
-#' epilepsy_fit <- run_model(epilepsy, "epilepsy")
-
+#' run_model(epilepsy, "epilepsy")
 run_model <- function(data, example = "tortoise"){
 
   ## Fit model
@@ -42,8 +29,8 @@ run_model <- function(data, example = "tortoise"){
 
   else if(example == "ctsib")
     lmer_fit <- glmer(stable ~ Surface + Vision + (1|Subject),
-                     family = binomial,
-                     data = data)
+                      family = binomial,
+                      data = data)
 
   else if(example == "epilepsy")
     lmer_fit <- glmer(seizures ~ age + expind + expind:treat + (1|id),
@@ -82,13 +69,13 @@ run_model <- function(data, example = "tortoise"){
 
   ## Return values
   important_list = list(beta = coeff,
-       sigmasq = sigmasq,
-       re = re,
-       test_stat = test_stat,
-       convergence = c(optinfo$conv$opt,
-                       optinfo$conv$lme4$code),
-       messages = c(optinfo$message,
-                    optinfo$conv$lme4$messages))
+                        sigmasq = sigmasq,
+                        re = re,
+                        test_stat = test_stat,
+                        convergence = c(optinfo$conv$opt,
+                                        optinfo$conv$lme4$code),
+                        messages = c(optinfo$message,
+                                     optinfo$conv$lme4$messages))
 
 
 }
@@ -99,28 +86,16 @@ run_model <- function(data, example = "tortoise"){
 #' @param n_boot the number of bootstraping samples to use
 #'
 #' @return A dataframe with important information about the predictors like point estimates, tstatistic, standard error and confidence intervals.
+#' @import lme4
+#' @import tidyverse
 #' @export
-#'
-#' @examples
-#' @importFrom dplyr tibble summarize %>% group_by
-#' ##### Epilepsy #####
-#'
-#' ## Load data
+#' @example
 #' data("epilepsy")
-#'
-#' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
 #'   group_by(id,treat,expind,age) %>%
 #'   summarize(seizures = sum(seizures),
 #'             .groups = "drop")
-#'
-#' ## Fit model to epilepsy data. Fixed effects in the model are:
-#' ##  (Intercept) -- the intercept
-#' ##  age -- age as a continuous predictor
-#' ##  expind -- a categorical variable with two levels (0 for before and 1 for after)
-#' ##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
-#'
-#' results <- model_results(epilepsy, 10)
+#' model_results(epilepsy,10)
 model_results <- function(data,n_boot){
 
   n <- nrow(data)
@@ -158,7 +133,7 @@ model_results <- function(data,n_boot){
     )
 
   merge(point_estimates,important_stats)
-  }
+}
 
 #' P Value of the predictor age
 #'
@@ -167,23 +142,18 @@ model_results <- function(data,n_boot){
 #' @param t_value statistic of predictor when the model was fitted
 #'
 #' @return The pvalue of the hypothesis predictor age equal to 0
+#' @import lme4
+#' @import tidyverse
 #' @export
-#'
-#'
-#' @examples
-#' @importFrom dplyr tibble summarize %>% group_by
-#' ##### Epilepsy #####
-#'
-#' ## Load data
+#' @example
 #' data("epilepsy")
 #'
-#' ## Sum separate observations for each patient in the after period
 #' epilepsy <- epilepsy %>%
 #'   group_by(id,treat,expind,age) %>%
 #'   summarize(seizures = sum(seizures),
 #'             .groups = "drop")
 #'
-#' pValue_age <- pValue_age(epilepsy,1.16,10)
+#' pValue_age(epilepsy,1.16,10)
 pValue_age <- function(data,t_value,n_boot){
 
   B <- n_boot
@@ -220,23 +190,9 @@ pValue_age <- function(data,t_value,n_boot){
 #' @param t_value statistic of predictor when the model was fitted
 #'
 #' @return The pvalue of the hypothesis predictor age equal to 0
+#' @import lme4
+#' @import tidyverse
 #' @export
-#'
-#'
-#' @examples
-#' @importFrom dplyr tibble summarize %>% group_by
-#' ##### Epilepsy #####
-#'
-#' ## Load data
-#' data("epilepsy")
-#'
-#' ## Sum separate observations for each patient in the after period
-#' epilepsy <- epilepsy %>%
-#'   group_by(id,treat,expind,age) %>%
-#'   summarize(seizures = sum(seizures),
-#'             .groups = "drop")
-#'
-#' pValue_expind <- pValue_expind(epilepsy,1.16,10)
 pValue_expind <- function(data,t_value,n_boot){
 
   B <- n_boot
@@ -273,22 +229,10 @@ pValue_expind <- function(data,t_value,n_boot){
 #' @param t_value statistic of predictor when the model was fitted
 #'
 #' @return The pvalue of the hypothesis predictor age equal to 0
+#' @import lme4
+#' @import tidyverse
 #' @export
-#'
-#' @examples
-#' @importFrom dplyr tibble summarize %>% group_by
-#' ##### Epilepsy #####
-#'
-#' ## Load data
-#' data("epilepsy")
-#'
-#' ## Sum separate observations for each patient in the after period
-#' epilepsy <- epilepsy %>%
-#'   group_by(id,treat,expind,age) %>%
-#'   summarize(seizures = sum(seizures),
-#'             .groups = "drop")
-#'
-#' pValue_treat <- pValue_age(epilepsy,1.16,10)
+
 pValue_treat <- function(data,t_value,n_boot){
 
   B <- n_boot
@@ -325,28 +269,11 @@ pValue_treat <- function(data,t_value,n_boot){
 #' @param n_boot the number of bootstraping samples to use
 #'
 #' @return A dataframe with important information about the predictors like point estimates, tstatistic, standard error, confidence intervals and p values.
+#' @import lme4
+#' @import tidyverse
 #' @export
 #'
-#' @examples
-#' @importFrom dplyr tibble summarize %>% group_by
-#' ##### Epilepsy #####
-#'
-#' ## Load data
-#' data("epilepsy")
-#'
-#' ## Sum separate observations for each patient in the after period
-#' epilepsy <- epilepsy %>%
-#'   group_by(id,treat,expind,age) %>%
-#'   summarize(seizures = sum(seizures),
-#'             .groups = "drop")
-#'
-#' ## Fit model to epilepsy data. Fixed effects in the model are:
-#' ##  (Intercept) -- the intercept
-#' ##  age -- age as a continuous predictor
-#' ##  expind -- a categorical variable with two levels (0 for before and 1 for after)
-#' ##  expind:treat -- a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
-#'
-#' summary <- model_summary(epilepsy, 10)
+
 model_summary <- function(data,n_boot){
 
   # Initial results
