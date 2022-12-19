@@ -1,4 +1,4 @@
-
+source("estimation_functions.R")
 #' Confidence intervals for predictors
 #'
 #' @param data the data set used to fit the model
@@ -24,8 +24,13 @@
 confidence_interval <- function(data, predictor,n_boot){
   if (!predictor %in% c("age","expind","treat","expind:treat"))
        stop("You must set predictor to one of: age,expind,treat,expind:treat")
+
+
   B <- n_boot
   n <- nrow(data)
+
+  #Fit initial model
+  model_0 = run_model(data,"epilepsy")
 
   bootstrap <- tibble(B = 1:B) %>%
     crossing(data) %>%
@@ -46,7 +51,9 @@ confidence_interval <- function(data, predictor,n_boot){
     filter(name == predictor) %>%
     summarize(Lower95 = quantile(estimate, .025),
               Upper95 = quantile(estimate,.975),
-              stderror = sd(estimate))
+              stderror = sd(estimate),
+              variable = predictor)
+
 }
 
 #' P Value of the predictor age
@@ -70,7 +77,7 @@ confidence_interval <- function(data, predictor,n_boot){
 #'   summarize(seizures = sum(seizures),
 #'             .groups = "drop")
 #'
-#' pValue_age <- pValue(epilepsy,1.16,1000)
+#' pValue_age <- pValue_age(epilepsy,1.16,1000)
 pValue_age <- function(data,t_value,n_boot){
 
   B <- n_boot
