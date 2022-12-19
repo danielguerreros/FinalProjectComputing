@@ -1,6 +1,10 @@
 ---
-title: "tutorial"
+title: "Fitting Poisson Model to Epilepsy Data"
 output: rmarkdown::html_vignette
+description: >
+  This vignette describes how we fits the poisson model to epilepsy data with a funtion 
+  that provides summary information including the point estimates, standard erros, 
+  and 95% confidence intervals for each parameter in the model.
 vignette: >
   %\VignetteIndexEntry{tutorial}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,4 +20,49 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(FinalProjectComputing)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
 ```
+
+
+
+ # Exploratory data analysis
+```{r include=FALSE}
+epilepsy <- data(epilepsy)
+epilepsy <- epilepsy %>%
+group_by(id,treat,expind,age) %>%
+summarize(seizures = sum(seizures),.groups = "drop")
+```
+
+age - age as a continuous predictor
+expind - a categorical variable with two levels (0 for before and 1 for after)
+treat - a categorical variable with two levels (1 for observations from individuals on the drug in the after period and 0 otherwise)
+
+summary statistics
+```{r echo=FALSE}
+summary(epilepsy)
+```
+```{r echo=FALSE}
+str(epilepsy)
+```
+```{r}
+ggplot(epilepsy , aes(x= treat , y= seizures)) +
+geom_boxplot(aes(group=treat))
+```
+```{r}
+ggplot(epilepsy , aes(x= expind , y= seizures)) +
+geom_boxplot(aes(group=expind))
+```
+```{r}
+plot(epilepsy$age, epilepsy$seizures,
+        xlab="age",
+        ylab="seizures")
+```
+```{r}
+head(epilepsy)
+```
+
+# Model Fitting
+
+We used
